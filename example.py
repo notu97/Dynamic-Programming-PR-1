@@ -7,7 +7,6 @@ TL = 1 # Turn Left
 TR = 2 # Turn Right
 PK = 3 # Pickup Key
 UD = 4 # Unlock Door
-
 def example_use_of_gym_env():
     '''
     The Coordinate System:
@@ -67,5 +66,5 @@ def example_use_of_gym_env():
         print("Reached Goal")
     
     # The number of steps so far
-    print('Step Count: {}'.format(env.step_count))
-    
+    print('Step Count: {}'.format(env.step_count))    
+
