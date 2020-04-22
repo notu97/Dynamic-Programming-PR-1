@@ -15,7 +15,23 @@ def step_cost(action):
     # You should implement the stage cost by yourself
     # Feel free to use it or not
     # ************************************************
-    return 0 # the cost of action
+    if(action==MF):
+        print('MF')
+        return -1
+    elif(action==TL):
+        print('TL')
+        return -1
+    elif(action==TR):
+        print('TR')
+        return -1    
+    elif(action==PK):
+        print('PK')
+        return -1
+    elif(action==UD):
+        print('UD')
+        return -1
+
+    # return 0 # the cost of action
 
 def step(env, action):
     '''

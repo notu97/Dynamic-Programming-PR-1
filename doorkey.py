@@ -1,3 +1,4 @@
+#In[]
 import numpy as np
 import gym
 from utils import *
@@ -8,7 +9,7 @@ TL = 1 # Turn Left
 TR = 2 # Turn Right
 PK = 3 # Pickup Key
 UD = 4 # Unlock Door
-
+# In[]
 def doorkey_problem(env):
     '''
     You are required to find the optimal path in
@@ -26,19 +27,23 @@ def doorkey_problem(env):
     '''
     optim_act_seq = [TL, MF, PK, TL, UD, MF, MF, MF, MF, TR, MF]
     return optim_act_seq
-
+#In[]
 
 def main():
+    # env_path = './envs/example-8x8.env'
     env_path = './envs/example-8x8.env'
     env, info = load_env(env_path) # load an environment
+    # print(env)
+    print(gym_minigrid.minigrid.Grid.encode(env.grid)[:,:,0].T)
+
+    plot_env(env)
+    print(info)
     seq = doorkey_problem(env) # find the optimal action sequence
     draw_gif_from_seq(seq, load_env(env_path)[0]) # draw a GIF & save
 
-
+#In[]
 if __name__ == '__main__':
-    example_use_of_gym_env()
+    # example_use_of_gym_env()
     main()
 
-        
-        
-    
+# %%

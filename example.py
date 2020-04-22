@@ -68,3 +68,4 @@ def example_use_of_gym_env():
     # The number of steps so far
     print('Step Count: {}'.format(env.step_count))    
 
+example_use_of_gym_env()
