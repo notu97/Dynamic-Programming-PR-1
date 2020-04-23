@@ -12,9 +12,130 @@ PK = 3 # Pickup Key
 UD = 4 # Unlock Door
 
 Action=np.array([MF,TL,TR,PK,UD])
+#In[]
+# Motion function
+def move_right(env):
+    step(env,TR)
+    step(env,MF)
+
+def move_left(env):
+    step(env,TL)
+    step(env,MF)
+
+def move_back(env):
+    step(env,TR)
+    step(env,TR)
+    step(env,MF)
+
+# def move_right(env):
+#     step(env,TR)
+#     step(env,MF)
+
+def robot_2_Grid(grid,env):
+    l= env.agent_pos[1]
+    b= env.agent_pos[0]
+
+    right_grid_F=grid[l,b+1]
+    left_grid_F=grid[l,b-1]
+    top_grid_F=grid[l-1,b]
+    bottom_grid_F=grid[l+1,b]
+
+    a= np.where(np.array([right_grid_F,left_grid_F,top_grid_F,bottom_grid_F]) < grid[l,b])[0] 
+    dir=env.agent_dir
+    print(a)
+    print(dir)
+    if(dir==0):
+        if(a==0):
+            print('MF')
+            step(env,MF)
+            return [MF]
+        elif(a==1):
+            print('TR -> TR -> MF')
+            step(env,TR)
+            step(env,TR)
+            step(env,MF)
+            return [TR,TR,MF]
+        elif(a==2):
+            print('TL-> MF')
+            step(env,TL)
+            step(env,MF)
+            return [TL,MF]
+        elif(a==3):
+            print('TR -> MF')
+            step(env,TR)
+            step(env,MF)
+            return [TR,MF]
+        # theta= np.pi/2 # 90
+    elif(dir==1):
+        if(a==0):
+            print('TL -> MF')
+            step(env,TL)
+            step(env,MF)
+            return [TL,MF]
+        elif(a==1):
+            print('TR -> MF')
+            step(env,TR)
+            step(env,MF)
+            return [TR,MF]
+        elif(a==2):
+            print('TR -> TR -> MF')
+            step(env,TR)
+            step(env,TR)
+            step(env,MF)
+            return [TR,TR,MF]
+        elif(a==3):
+            print('MF')
+            step(env,MF)
+            return [MF]
+        # theta=0
+    elif(dir==2):
+        if(a==0):
+            print('TR -> TR -> MF')
+            step(env,TR)
+            step(env,TR)
+            step(env,MF)
+            return [TR,TR,MF]
+        elif(a==1):
+            print('MF')
+            step(env,MF)
+            return [MF]
+        elif(a==2):
+            print('TR-> MF')
+            step(env,TR)
+            step(env,MF)
+            return [TR,MF]
+        elif(a==3):
+            print('TL -> MF')
+            step(env,TL)
+            step(env,MF)
+            return [TL,MF]
+        # theta= -np.pi/2 #-90
+    elif(dir==3):
+        if(a==0):
+            print('TR -> MF')
+            step(env,TR)
+            step(env,MF)
+            return [TR,MF]
+        elif(a==1):
+            print('TL -> MF')
+            step(env,TL)
+            step(env,MF)
+            return [TL,MF]
+        elif(a==2):
+            print('MF')
+            step(env,MF)
+            return [MF] 
+        elif(a==3):
+            print('TR -> TR -> MF')
+            step(env,TR)
+            step(env,TR)
+            step(env,MF)
+            return [TR,TR,MF]
+        # theta=np.pi
+
 
 # In[]
-def doorkey_problem(env):
+def doorkey_problem(flag,c_CD,c_OD_1,c_OD_2,c_OD_3,goal,agentPos,keyPos,doorPos,env,info):
     '''
     You are required to find the optimal path in
         doorkey-5x5-normal.env
@@ -29,13 +150,43 @@ def doorkey_problem(env):
         
     Feel Free to modify this fuction
     '''
+    goal=np.roll(goal,1)
+    agentPos=np.roll(agentPos,1)
+    keyPos=np.roll(keyPos,1)
+    doorPos=np.roll(doorPos,1)
+
+    if(flag==True):
+        # print(c_CD)
+        print('Key needed') # work with other 3 matrices here
+    else:
+        print('Key not needed')
+        count=c_CD[agentPos[0],agentPos[1]]
+        print(count)
+        seq=[]
+        plot_env(env)
+        while count>=0:
+            val=(robot_2_Grid(c_CD,env))
+            if(val):    
+                for i in val:
+                    seq.append(i)
+            elif(not val):
+                seq.append(MF)
+            plot_env(env)
+            print(count)
+            count=count-1
+        print(c_CD)
+
+        # print()
+        
+    # optim_act_seq=seq
     optim_act_seq = [TL, MF, PK, TL, UD, MF, MF, MF, MF, TR, MF]
     return optim_act_seq
+
 #In[]
 def fill_4_cells(cost_grid,loc,val,grid_flag):
     l=loc[0]
     b=loc[1]
-    print(l,b)
+    # print(l,b)
     # r=cost_grid[l,b]+1
     if cost_grid[l-1,b]!= math.inf and grid_flag[l-1,b]==0:
         cost_grid[l-1,b]=cost_grid[l,b]+1 #Top
@@ -65,8 +216,8 @@ def fill_4_cells(cost_grid,loc,val,grid_flag):
     #     cost_grid[l,b+1]=math.inf
         grid_flag[l,b+1]=1
 
-    a=min(np.max(cost_grid),cost_grid[l,b]+1)
-    print('a------------------------>>> ',a)
+    # a=min(np.max(cost_grid),cost_grid[l,b]+1)
+    # print('a------------------------>>> ',a)
     return cost_grid,grid_flag,(cost_grid[l,b]+1)
 
 #In[]
@@ -74,65 +225,50 @@ def label_Correction(env,agentPos,cost_grid,goal,grid_flag):
 
     c=0
     goal=np.roll(goal,1)
-    # agentPos=info['init_agent_pos']
     agentPos=np.roll(agentPos,1)
-    # print(goal)
     cost_grid,grid_flag,r = fill_4_cells(cost_grid, goal,0, grid_flag)
-    
-    # for location in np.where(cost_grid==1):
-    # x=np.where(cost_grid==1)[0]
-    # y=np.where(cost_grid==1)[1]
-    print('Cost_grid')
-    print(cost_grid)
-    print('Grid_flag')
-    print(grid_flag)
+    # print('here')
+    # print('Cost_grid')
+    # print(cost_grid)
+    # print('Grid_flag')
+    # print(grid_flag)
     
     while c<=r:
         
         q=np.vstack((np.where(cost_grid==r)[0],np.where(cost_grid==r)[1]))
-        print(q)
+        # print(q)
         grid_flag[goal[0],goal[1]]=1
         # print(y)
         for i in range(len(q.T)):
             cost_grid,grid_flag,r= fill_4_cells(cost_grid, q[:,i].T,0, grid_flag)
-            # print(r)
-            # a=min(np.max(cost_grid),r)
-            # print("r=-----------> ",r)
-            # cost_grid,grid_flag= fill_4_cells(cost_grid, q[:,1].T,0, grid_flag)
-            # cost_grid,grid_flag= fill_4_cells(cost_grid, q[:,2].T,0, grid_flag)
-        # print(c)
         c=c+1
-    # if( grid_flag[agentPos[0],agentPos[1]] ==0):
-    #     print('We need key')
-    # else:
-    #     print('We dont need key')
 
-    print('Cost_grid')
-    print(cost_grid)
-    print('Grid_flag')
-    print(grid_flag)
+    # print('Cost_grid')
+    # print(cost_grid)
+    # print('Grid_flag')
+    # print(grid_flag)
 
     
 #In[]
 def main():
 
-    # env_path = './envs/example-8x8.env'
+    env_path = './envs/example-8x8.env'
     # env_path = './envs/doorkey-5x5-normal.env'
-    # env_path = './envs/doorkey-6x6-direct.env'
+    # env_path = './envs/doorkey-6x6-direct.env' # gif saved
     # env_path = './envs/doorkey-6x6-normal.env'
-    # env_path = './envs/doorkey-6x6-shortcut.env' # Some Problem
-    # env_path = './envs/doorkey-8x8-direct.env'
+    # env_path = './envs/doorkey-6x6-shortcut.env' 
+    # env_path = './envs/doorkey-8x8-direct.env' # gif saved
     # env_path = './envs/doorkey-8x8-normal.env'
-    env_path = './envs/doorkey-8x8-shortcut.env' # some problem # may be solved
+    # env_path = './envs/doorkey-8x8-shortcut.env' 
 
     env, info = load_env(env_path) # load an environment
+
     goal=info['goal_pos']
     agentPos=info['init_agent_pos']
     keyPos=info['key_pos']
     doorPos=info['door_pos']
-    # step(env,TL)
+    
     world_grid= (gym_minigrid.minigrid.Grid.encode(env.grid)[:,:,0].T).astype(np.float32)
-    # index= np.where(world_grid>=2) and np.where(world_grid<5)
     
     index= np.where(world_grid!=1 )
     world_grid[index[0][:],index[1][:]]= math.inf
@@ -140,30 +276,21 @@ def main():
     world_grid[info['goal_pos'][1],info['goal_pos'][0]]=0
 
     world_grid[np.where(world_grid==1)]=0
-    # print(world_grid)
     grid_flag=np.zeros(np.shape(world_grid))
-    # print(grid_flag)
-
     
     cost_grid=world_grid
     cost_grid[np.where(cost_grid<=0)]=0
-    # cost_grid[info['key_pos'][1],info['key_pos'][0]]=2
-    print(cost_grid)
+    cost_grid_CD=cost_grid #######################################
+    # print(cost_grid)
 
-    # V=np.zeros((l,5))
     #------------- When Door closed-----------
     # Cost without door
     label_Correction(env,agentPos,cost_grid,goal,grid_flag)
-    # cost_grid[np.where(cost_grid<=0)]=0
-
-    # cost_with_door_closed=cost_grid[info['init_agent_pos'][1],info['init_agent_pos'][0] ]
 
     if(cost_grid[info['init_agent_pos'][1],info['init_agent_pos'][0] ] ==0):
         cost_with_door_closed=math.inf
     else:
         cost_with_door_closed=cost_grid[info['init_agent_pos'][1],info['init_agent_pos'][0] ]
-    
-        # cost_without_door=cost_grid[info['init_agent_pos'][1],info['init_agent_pos'][0] ]
     
     #-------------When Door Open-------------
     world_grid= (gym_minigrid.minigrid.Grid.encode(env.grid)[:,:,0].T).astype(np.float32)
@@ -173,19 +300,17 @@ def main():
     world_grid[info['goal_pos'][1],info['goal_pos'][0]]=0
 
     world_grid[np.where(world_grid==1)]=0
-    # print(world_grid)
     grid_flag=np.zeros(np.shape(world_grid))
-    # print(grid_flag)
 
     cost_grid=world_grid
     cost_grid[np.where(cost_grid<=0)]=0
 
     world_grid[info['door_pos'][1]][info['door_pos'][0]]=0 # Remove Door from Map
-    # init pos to Key
+    # ------------------init_pos to Key_pos
     label_Correction(env,agentPos,cost_grid,keyPos,grid_flag) 
     c1=cost_grid[agentPos[1],agentPos[0]]-1
-    print("C1= ",c1)
-    # print(world_grid)
+    # print("C1= ",c1)
+    cost_grid_OD_1=cost_grid ####################################
 
     # ------------
     world_grid= (gym_minigrid.minigrid.Grid.encode(env.grid)[:,:,0].T).astype(np.float32)
@@ -195,18 +320,17 @@ def main():
     world_grid[info['goal_pos'][1],info['goal_pos'][0]]=0
 
     world_grid[np.where(world_grid==1)]=0
-    # print(world_grid)
     grid_flag=np.zeros(np.shape(world_grid))
-    # print(grid_flag)
 
     cost_grid=world_grid
     cost_grid[np.where(cost_grid<=0)]=0
 
-    # key to Door
+    # -----------------key to Door
     world_grid[info['door_pos'][1]][info['door_pos'][0]]=0 # Remove Door from Map
     label_Correction(env,keyPos,cost_grid,doorPos,grid_flag) 
     c2=cost_grid[keyPos[1],keyPos[0]]-1
-    print("C2= ",c2)
+    # print("C2= ",c2)
+    cost_grid_OD_2=cost_grid #####################################
     #--------------------------
     world_grid= (gym_minigrid.minigrid.Grid.encode(env.grid)[:,:,0].T).astype(np.float32)
     index= np.where(world_grid!=1 )
@@ -215,71 +339,46 @@ def main():
     world_grid[info['goal_pos'][1],info['goal_pos'][0]]=0
 
     world_grid[np.where(world_grid==1)]=0
-    # print(world_grid)
     grid_flag=np.zeros(np.shape(world_grid))
-    # print(grid_flag)
 
     cost_grid=world_grid
     cost_grid[np.where(cost_grid<=0)]=0
 
-    # key to Door
+    # -----------------key to Door
     world_grid[info['door_pos'][1]][info['door_pos'][0]]=0 # Remove Door from Map
     label_Correction(env,doorPos,cost_grid,goal,grid_flag) 
     c3=cost_grid[doorPos[1],doorPos[0]]
-    print("C3= ",c3)
+    # print("C3= ",c3)
+    cost_grid_OD_3=cost_grid #####################################
+    
+    
 
     cost_with_door_open=c1+c2+c3
-
-    # grid_flag=np.zeros(np.shape(world_grid))
-    # cost_grid=world_grid
-    # cost_grid[np.where(cost_grid<=0)]=0
-    
-    # print(cost_grid)
-    # print(world_grid)
-    # # Init Pos to Key
-    # label_Correction(env,agentPos,cost_grid,keyPos,grid_flag) 
-    # c1=cost_grid[agentPos[1],agentPos[0]]-1
-    # print(c1)
-
-    # cost_grid=world_grid
-    # cost_grid[np.where(cost_grid<=0)]=0
-    # grid_flag=np.zeros(np.shape(world_grid))
-    
-    # # Key to Door
-    # label_Correction(env,keyPos,cost_grid,doorPos,grid_flag) 
-    # c2=cost_grid[agentPos[1],agentPos[0]]-1
-    # print(c2)
-
-
-
-    # cost_with_door_open= cost_grid[info['init_agent_pos'][1],info['init_agent_pos'][0] ]
 
     print('Cost with DOOR CLosed   ', cost_with_door_closed)
     print('Cost with DOOR Open  ', cost_with_door_open)
 
     if(cost_with_door_closed>cost_with_door_open):
         print('We need Key')
+        flag=True
+        # cost_grid_CD=0
     else:
         print('No key needed')
+        flag=False
+        # cost_grid_OD_1,cost_grid_OD_2,cost_grid_OD_3=0,0,0
 
-    # print(world_grid)
-    plot_env(env)
-    # print(info)
-
-
+    seq= doorkey_problem(flag,cost_grid_CD,cost_grid_OD_1,cost_grid_OD_2,cost_grid_OD_3,goal,agentPos,keyPos,doorPos,env,info)
+    print(seq)
+    # plot_env(env)
     #----------------------------------------------------------------------------
     # seq = doorkey_problem(env) # find the optimal action sequence
-    # draw_gif_from_seq(seq, load_env(env_path)[0]) # draw a GIF & save
+    draw_gif_from_seq(seq, load_env(env_path)[0], path='./gif/doorkey.gif') # draw a GIF & save
 
 
 #In[]
 if __name__ == '__main__':
     # example_use_of_gym_env()
     main()
-
-
-
-# %%
 
 
 # %%
