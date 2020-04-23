@@ -287,7 +287,11 @@ def doorkey_problem(flag,c_CD,c_OD_1,c_OD_2,c_OD_3,goal,agentPos,keyPos,doorPos,
         seq.append(PK)
         step(env,PK)
 
-        count2=c_OD_2[keyPos[0],keyPos[1]]-2
+        agentPos=env.agent_pos
+        agentPos=np.roll(agentPos,1)
+
+        # count2=c_OD_2[keyPos[0],keyPos[1]]-1
+        count2=c_OD_2[agentPos[0],agentPos[1]]-1
         print(count2)
         print(c_OD_2)
 
@@ -302,11 +306,15 @@ def doorkey_problem(flag,c_CD,c_OD_1,c_OD_2,c_OD_3,goal,agentPos,keyPos,doorPos,
             print('count2',count2)
             count2=count2-1
         
-        seq.pop(-1)
+        # seq.pop(-1)
         seq.append(UD)
         step(env,UD)
 
-        count3=c_OD_3[doorPos[0],doorPos[1]]
+        agentPos=env.agent_pos
+        agentPos=np.roll(agentPos,1)
+
+        # count3=c_OD_3[doorPos[0],doorPos[1]]
+        count3=c_OD_3[agentPos[0],agentPos[1]]-1
         print(count3)
         print(c_OD_3)
         
@@ -418,14 +426,14 @@ def label_Correction(env,agentPos,cost_grid,goal,grid_flag):
 #In[]
 def main():
 
-    # env_path = './envs/example-8x8.env'
+    env_path = './envs/example-8x8.env'
     # env_path = './envs/doorkey-5x5-normal.env'
     # env_path = './envs/doorkey-6x6-direct.env' # gif saved
     # env_path = './envs/doorkey-6x6-normal.env' # PROBLEM
     # env_path = './envs/doorkey-6x6-shortcut.env' 
     # env_path = './envs/doorkey-8x8-direct.env' # gif saved
     # env_path = './envs/doorkey-8x8-normal.env'
-    env_path = './envs/doorkey-8x8-shortcut.env' 
+    # env_path = './envs/doorkey-8x8-shortcut.env' 
 
     env, info = load_env(env_path) # load an environment
 
@@ -538,7 +546,7 @@ def main():
     plot_env(env)
     #----------------------------------------------------------------------------
     # seq = doorkey_problem(env) # find the optimal action sequence
-    draw_gif_from_seq(seq, load_env(env_path)[0], path='./gif/doorkey-8x8-shortcut.gif') # draw a GIF & save
+    draw_gif_from_seq(seq, load_env(env_path)[0], path='./gif_new/example-8x8.gif') # draw a GIF & save
 
 
 #In[]
