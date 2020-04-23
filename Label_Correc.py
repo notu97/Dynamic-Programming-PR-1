@@ -158,6 +158,7 @@ def doorkey_problem(flag,c_CD,c_OD_1,c_OD_2,c_OD_3,goal,agentPos,keyPos,doorPos,
     if(flag==True):
         # print(c_CD)
         print('Key needed') # work with other 3 matrices here
+        count1=c_OD_1[keyPos[0],keyPos[1]]
     else:
         print('Key not needed')
         count=c_CD[agentPos[0],agentPos[1]]
@@ -169,8 +170,8 @@ def doorkey_problem(flag,c_CD,c_OD_1,c_OD_2,c_OD_3,goal,agentPos,keyPos,doorPos,
             if(val):    
                 for i in val:
                     seq.append(i)
-            elif(not val):
-                seq.append(MF)
+            # elif(not val):
+            #     seq.append(MF)
             plot_env(env)
             print(count)
             count=count-1
@@ -178,8 +179,8 @@ def doorkey_problem(flag,c_CD,c_OD_1,c_OD_2,c_OD_3,goal,agentPos,keyPos,doorPos,
 
         # print()
         
-    # optim_act_seq=seq
-    optim_act_seq = [TL, MF, PK, TL, UD, MF, MF, MF, MF, TR, MF]
+    optim_act_seq=seq
+    # optim_act_seq = [TL, MF, PK, TL, UD, MF, MF, MF, MF, TR, MF]
     return optim_act_seq
 
 #In[]
@@ -252,9 +253,9 @@ def label_Correction(env,agentPos,cost_grid,goal,grid_flag):
 #In[]
 def main():
 
-    env_path = './envs/example-8x8.env'
+    # env_path = './envs/example-8x8.env'
     # env_path = './envs/doorkey-5x5-normal.env'
-    # env_path = './envs/doorkey-6x6-direct.env' # gif saved
+    env_path = './envs/doorkey-6x6-direct.env' # gif saved
     # env_path = './envs/doorkey-6x6-normal.env'
     # env_path = './envs/doorkey-6x6-shortcut.env' 
     # env_path = './envs/doorkey-8x8-direct.env' # gif saved
@@ -372,7 +373,7 @@ def main():
     # plot_env(env)
     #----------------------------------------------------------------------------
     # seq = doorkey_problem(env) # find the optimal action sequence
-    draw_gif_from_seq(seq, load_env(env_path)[0], path='./gif/doorkey.gif') # draw a GIF & save
+    draw_gif_from_seq(seq, load_env(env_path)[0], path='./gif/doorkey-6x6-direct.gif') # draw a GIF & save
 
 
 #In[]
