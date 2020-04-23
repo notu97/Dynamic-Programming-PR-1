@@ -30,7 +30,112 @@ def move_back(env):
 # def move_right(env):
 #     step(env,TR)
 #     step(env,MF)
+#In[]
 
+def robot_motion(grid,env):
+    l= env.agent_pos[1]
+    b= env.agent_pos[0]
+
+    right_grid_F=grid[l,b+1]
+    left_grid_F=grid[l,b-1]
+    top_grid_F=grid[l-1,b]
+    bottom_grid_F=grid[l+1,b]
+
+    a= (np.where(np.array([right_grid_F,left_grid_F,top_grid_F,bottom_grid_F]) < grid[l,b]))[0][0]
+    dir=env.agent_dir
+    print(a)
+    print(dir)
+    if(dir==0):
+        if(a==0):
+            print('MF')
+            step(env,MF)
+            return [MF]
+        elif(a==1):
+            print('TR -> TR -> MF')
+            step(env,TR)
+            step(env,TR)
+            step(env,MF)
+            return [TR,TR,MF]
+        elif(a==2):
+            print('TL-> MF')
+            step(env,TL)
+            step(env,MF)
+            return [TL,MF]
+        elif(a==3):
+            print('TR -> MF')
+            step(env,TR)
+            step(env,MF)
+            return [TR,MF]
+        # theta= np.pi/2 # 90
+    elif(dir==1):
+        if(a==0):
+            print('TL -> MF')
+            step(env,TL)
+            step(env,MF)
+            return [TL,MF]
+        elif(a==1):
+            print('TR -> MF')
+            step(env,TR)
+            step(env,MF)
+            return [TR,MF]
+        elif(a==2):
+            print('TR -> TR -> MF')
+            step(env,TR)
+            step(env,TR)
+            step(env,MF)
+            return [TR,TR,MF]
+        elif(a==3):
+            print('MF')
+            step(env,MF)
+            return [MF]
+        # theta=0
+    elif(dir==2):
+        if(a==0):
+            print('TR -> TR -> MF')
+            step(env,TR)
+            step(env,TR)
+            step(env,MF)
+            return [TR,TR,MF]
+        elif(a==1):
+            print('MF')
+            step(env,MF)
+            return [MF]
+        elif(a==2):
+            print('TR-> MF')
+            step(env,TR)
+            step(env,MF)
+            return [TR,MF]
+        elif(a==3):
+            print('TL -> MF')
+            step(env,TL)
+            step(env,MF)
+            return [TL,MF]
+        # theta= -np.pi/2 #-90
+    elif(dir==3):
+        if(a==0):
+            print('TR -> MF')
+            step(env,TR)
+            step(env,MF)
+            return [TR,MF]
+        elif(a==1):
+            print('TL -> MF')
+            step(env,TL)
+            step(env,MF)
+            return [TL,MF]
+        elif(a==2):
+            print('MF')
+            step(env,MF)
+            return [MF] 
+        elif(a==3):
+            print('TR -> TR -> MF')
+            step(env,TR)
+            step(env,TR)
+            step(env,MF)
+            return [TR,TR,MF]
+        # theta=np.pi
+
+
+#In[]
 def robot_2_Grid(grid,env):
     l= env.agent_pos[1]
     b= env.agent_pos[0]
@@ -158,7 +263,65 @@ def doorkey_problem(flag,c_CD,c_OD_1,c_OD_2,c_OD_3,goal,agentPos,keyPos,doorPos,
     if(flag==True):
         # print(c_CD)
         print('Key needed') # work with other 3 matrices here
-        count1=c_OD_1[keyPos[0],keyPos[1]]
+
+        count1=c_OD_1[agentPos[0],agentPos[1]]-1
+        print('count',count1)
+        print('cost_grid',c_OD_1)
+
+        seq=[]
+        plot_env(env)
+        while count1>=0:
+            val=(robot_motion(c_OD_1,env))
+            if(val):    
+                for i in val:
+                    seq.append(i)
+            # elif(not val):
+            #     seq.append(MF)
+            plot_env(env)
+            print('count1',count1)
+            count1=count1-1
+        
+        seq.pop(-1)
+        # seq.pop(-1)
+        seq.append(PK)
+        step(env,PK)
+
+        count2=c_OD_2[keyPos[0],keyPos[1]]-2
+        print(count2)
+        print(c_OD_2)
+
+        while count2>=0:
+            val=(robot_motion(c_OD_2,env))
+            if(val):    
+                for i in val:
+                    seq.append(i)
+            # elif(not val):
+            #     seq.append(MF)
+            plot_env(env)
+            print('count2',count2)
+            count2=count2-1
+        
+        seq.pop(-1)
+        seq.append(UD)
+        step(env,UD)
+
+        count3=c_OD_3[doorPos[0],doorPos[1]]
+        print(count3)
+        print(c_OD_3)
+        
+        while count3>=0:
+            val=(robot_motion(c_OD_3,env))
+            if(val):    
+                for i in val:
+                    seq.append(i)
+            # elif(not val):
+            #     seq.append(MF)
+            plot_env(env)
+            print('count3',count3)
+            count3=count3-1
+        # seq.pop(-1)
+        
+        optim_act_seq=seq
     else:
         print('Key not needed')
         count=c_CD[agentPos[0],agentPos[1]]
@@ -176,10 +339,11 @@ def doorkey_problem(flag,c_CD,c_OD_1,c_OD_2,c_OD_3,goal,agentPos,keyPos,doorPos,
             print(count)
             count=count-1
         print(c_CD)
+        optim_act_seq=seq
 
         # print()
         
-    optim_act_seq=seq
+    # optim_act_seq=seq
     # optim_act_seq = [TL, MF, PK, TL, UD, MF, MF, MF, MF, TR, MF]
     return optim_act_seq
 
@@ -255,12 +419,12 @@ def main():
 
     # env_path = './envs/example-8x8.env'
     # env_path = './envs/doorkey-5x5-normal.env'
-    env_path = './envs/doorkey-6x6-direct.env' # gif saved
-    # env_path = './envs/doorkey-6x6-normal.env'
+    # env_path = './envs/doorkey-6x6-direct.env' # gif saved
+    # env_path = './envs/doorkey-6x6-normal.env' # PROBLEM
     # env_path = './envs/doorkey-6x6-shortcut.env' 
     # env_path = './envs/doorkey-8x8-direct.env' # gif saved
     # env_path = './envs/doorkey-8x8-normal.env'
-    # env_path = './envs/doorkey-8x8-shortcut.env' 
+    env_path = './envs/doorkey-8x8-shortcut.env' 
 
     env, info = load_env(env_path) # load an environment
 
@@ -370,16 +534,19 @@ def main():
 
     seq= doorkey_problem(flag,cost_grid_CD,cost_grid_OD_1,cost_grid_OD_2,cost_grid_OD_3,goal,agentPos,keyPos,doorPos,env,info)
     print(seq)
-    # plot_env(env)
+    plot_env(env)
     #----------------------------------------------------------------------------
     # seq = doorkey_problem(env) # find the optimal action sequence
-    draw_gif_from_seq(seq, load_env(env_path)[0], path='./gif/doorkey-6x6-direct.gif') # draw a GIF & save
+    draw_gif_from_seq(seq, load_env(env_path)[0], path='./gif/doorkey-8x8-shortcut.gif') # draw a GIF & save
 
 
 #In[]
 if __name__ == '__main__':
     # example_use_of_gym_env()
     main()
+
+
+# %%
 
 
 # %%
