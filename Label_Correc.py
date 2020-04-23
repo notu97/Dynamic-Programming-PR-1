@@ -282,10 +282,13 @@ def doorkey_problem(flag,c_CD,c_OD_1,c_OD_2,c_OD_3,goal,agentPos,keyPos,doorPos,
             print('count1',count1)
             count1=count1-1
         
+        print(seq)
         seq.pop(-1)
+        print(seq)
         # seq.pop(-1)
         seq.append(PK)
         step(env,PK)
+        print(seq)
 
         agentPos=env.agent_pos
         agentPos=np.roll(agentPos,1)
@@ -307,8 +310,11 @@ def doorkey_problem(flag,c_CD,c_OD_1,c_OD_2,c_OD_3,goal,agentPos,keyPos,doorPos,
             count2=count2-1
         
         # seq.pop(-1)
+        print(seq)
+        seq.pop(-1)
         seq.append(UD)
         step(env,UD)
+        print(seq)
 
         agentPos=env.agent_pos
         agentPos=np.roll(agentPos,1)
@@ -323,7 +329,7 @@ def doorkey_problem(flag,c_CD,c_OD_1,c_OD_2,c_OD_3,goal,agentPos,keyPos,doorPos,
             if(val):    
                 for i in val:
                     seq.append(i)
-            # elif(not val):
+            # elif(not val):""
             #     seq.append(MF)
             plot_env(env)
             print('count3',count3)
@@ -546,7 +552,7 @@ def main():
     plot_env(env)
     #----------------------------------------------------------------------------
     # seq = doorkey_problem(env) # find the optimal action sequence
-    draw_gif_from_seq(seq, load_env(env_path)[0], path='./gif_new/example-8x8.gif') # draw a GIF & save
+    draw_gif_from_seq(seq, load_env(env_path)[0], path='./gif_new/example-8x8_test.gif') # draw a GIF & save
 
 
 #In[]
