@@ -31,7 +31,7 @@ def move_back(env):
 #     step(env,TR)
 #     step(env,MF)
 #In[]
-
+# When key is needed
 def robot_motion(grid,env):
     l= env.agent_pos[1]
     b= env.agent_pos[0]
@@ -136,6 +136,7 @@ def robot_motion(grid,env):
 
 
 #In[]
+# When key is not needed
 def robot_2_Grid(grid,env):
     l= env.agent_pos[1]
     b= env.agent_pos[0]
