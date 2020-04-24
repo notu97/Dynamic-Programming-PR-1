@@ -644,6 +644,7 @@ def main():
 
     # PLOT VALUE FUNCTIONS
     Q=plot_value_function(env,seq,goal,agentPos,doorPos,flag,info)
+    # Q[np.where(Q==math.inf)]=0
     plt.plot(Q.T)
     plt.grid()
     plt.xlabel('Time')
