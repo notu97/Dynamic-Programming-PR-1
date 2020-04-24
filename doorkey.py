@@ -3,7 +3,7 @@ import numpy as np
 import gym
 import math
 from utils import *
-
+import matplotlib.pyplot as plt
 # %%
 MF = 0 # Move Forward
 TL = 1 # Turn Left
@@ -12,24 +12,6 @@ PK = 3 # Pickup Key
 UD = 4 # Unlock Door
 
 Action=np.array([MF,TL,TR,PK,UD])
-#In[]
-# Motion function
-def move_right(env):
-    step(env,TR)
-    step(env,MF)
-
-def move_left(env):
-    step(env,TL)
-    step(env,MF)
-
-def move_back(env):
-    step(env,TR)
-    step(env,TR)
-    step(env,MF)
-
-# def move_right(env):
-#     step(env,TR)
-#     step(env,MF)
 #In[]
 # When key is needed
 def robot_motion(grid,env):
@@ -270,7 +252,7 @@ def doorkey_problem(flag,c_CD,c_OD_1,c_OD_2,c_OD_3,goal,agentPos,keyPos,doorPos,
         print('cost_grid',c_OD_1)
 
         seq=[]
-        plot_env(env)
+        # plot_env(env)
         while count1>=0:
             val=(robot_motion(c_OD_1,env))
             if(val):    
@@ -278,7 +260,7 @@ def doorkey_problem(flag,c_CD,c_OD_1,c_OD_2,c_OD_3,goal,agentPos,keyPos,doorPos,
                     seq.append(i)
             # elif(not val):
             #     seq.append(MF)
-            plot_env(env)
+            # plot_env(env)
             print('count1',count1)
             count1=count1-1
         
@@ -305,7 +287,7 @@ def doorkey_problem(flag,c_CD,c_OD_1,c_OD_2,c_OD_3,goal,agentPos,keyPos,doorPos,
                     seq.append(i)
             # elif(not val):
             #     seq.append(MF)
-            plot_env(env)
+            # plot_env(env)
             print('count2',count2)
             count2=count2-1
         
@@ -331,7 +313,7 @@ def doorkey_problem(flag,c_CD,c_OD_1,c_OD_2,c_OD_3,goal,agentPos,keyPos,doorPos,
                     seq.append(i)
             # elif(not val):""
             #     seq.append(MF)
-            plot_env(env)
+            # plot_env(env)
             print('count3',count3)
             count3=count3-1
         # seq.pop(-1)
@@ -342,7 +324,7 @@ def doorkey_problem(flag,c_CD,c_OD_1,c_OD_2,c_OD_3,goal,agentPos,keyPos,doorPos,
         count=c_CD[agentPos[0],agentPos[1]]
         print(count)
         seq=[]
-        plot_env(env)
+        # plot_env(env)
         while count>=0:
             val=(robot_2_Grid(c_CD,env))
             if(val):    
@@ -350,7 +332,7 @@ def doorkey_problem(flag,c_CD,c_OD_1,c_OD_2,c_OD_3,goal,agentPos,keyPos,doorPos,
                     seq.append(i)
             # elif(not val):
             #     seq.append(MF)
-            plot_env(env)
+            # plot_env(env)
             print(count)
             count=count-1
         print(c_CD)
@@ -427,19 +409,108 @@ def label_Correction(env,agentPos,cost_grid,goal,grid_flag):
     # print(cost_grid)
     # print('Grid_flag')
     # print(grid_flag)
+#In[]
+# def get_values(l,b):
+#     return  np.array([cost_grid[l+1,b], cost_grid[l-1,b], cost_grid[l,b+1], cost_grid[l,b-1])
+
+#In[]
+def plot_value_function(env,seq,goal,agentPos,doorPos, flag,info):
+    print('inside value function')
+    l=goal[1]
+    b=goal[0]
+
+    l_keypos=info['key_pos'][1]
+    b_keypos=info['key_pos'][0]
+    
+    l_doorPos=info['door_pos'][1]
+    b_doorPos=info['door_pos'][0]
+
+    print(l_doorPos,b_doorPos)
+    print(l,b)
+    print(l_keypos,b_keypos)
+
+    Q=np.zeros((9,len(seq)))
+    # seq.append(MF)
+    
+    for i in range(len(seq)):
+        # goal=np.roll(env.agent_pos,1)
+        goal=env.agent_pos
+        # plot_env(env)
+        print('===========================')
+        world_grid= (gym_minigrid.minigrid.Grid.encode(env.grid)[:,:,0].T).astype(np.float32)
+        # world_grid[np.where(world_grid==2)]=math.inf
+        index= np.where(world_grid!=1 )
+        world_grid[index[0][:],index[1][:]]= math.inf
+        world_grid[info['key_pos'][1],info['key_pos'][0]]=-2
+        world_grid[info['goal_pos'][1],info['goal_pos'][0]]=0
+
+        world_grid[np.where(world_grid==1)]=0
+        grid_flag=np.zeros(np.shape(world_grid))
+        
+        cost_grid=world_grid
+        cost_grid[np.where(cost_grid<=0)]=0   
+        grid_flag=np.zeros(np.shape(world_grid))     
+        
+        cost_grid[l+1,b]=math.inf
+        cost_grid[l-1,b]=0
+        cost_grid[l,b+1]=math.inf
+        cost_grid[l,b-1]=0
+
+        print("print wala", seq[i])
+
+        if flag==True:
+            cost_grid[doorPos[1],doorPos[0]]=0
+            world_grid[info['door_pos'][1]][info['door_pos'][0]]=0
+            print(cost_grid)
+            print('GOAL:  ',goal)
+            label_Correction(env,agentPos,cost_grid,goal,grid_flag)
+            print(grid_flag)
+            print(cost_grid)
+            step(env,seq[i])
+            # plot_env(env)
+            #### STORE Values#########
+            
+            print('-------------------------------------------------------------')
+        
+        else:    
+            print(cost_grid)
+            print('GOAL:  ',goal)
+            label_Correction(env,agentPos,cost_grid,goal,grid_flag)
+            print(grid_flag)
+            print(cost_grid)
+            step(env,seq[i])
+            # plot_env(env)
+            print('-------------------------------------------------------------')
+
+        Q[0,i]=cost_grid[l_keypos+1,b_keypos]
+        Q[1,i]=cost_grid[l_keypos-1,b_keypos]
+        Q[2,i]=cost_grid[l_keypos,b_keypos+1]
+        Q[3,i]=cost_grid[l_keypos,b_keypos-1]
+        
+        Q[4,i]=cost_grid[l+1,b]
+        Q[5,i]=cost_grid[l-1,b]
+        Q[6,i]=cost_grid[l,b+1]
+        Q[7,i]=cost_grid[l,b-1]
+        
+        # Q[8,i]=cost_grid[l_doorPos,b_doorPos+1]
+        Q[8,i]=cost_grid[l_doorPos,b_doorPos-1]
+
+    return Q
+#In[]     
+# plot_value_function()
 
     
 #In[]
 def main():
 
-    # env_path = './envs/example-8x8.env'
+    env_path = './envs/example-8x8.env'
     # env_path = './envs/doorkey-5x5-normal.env'
     # env_path = './envs/doorkey-6x6-direct.env' # gif saved
     # env_path = './envs/doorkey-6x6-normal.env' # PROBLEM
     # env_path = './envs/doorkey-6x6-shortcut.env' 
     # env_path = './envs/doorkey-8x8-direct.env' # gif saved
     # env_path = './envs/doorkey-8x8-normal.env'
-    env_path = './envs/doorkey-8x8-shortcut.env' 
+    # env_path = './envs/doorkey-8x8-shortcut.env' 
 
     env, info = load_env(env_path) # load an environment
 
@@ -549,10 +620,31 @@ def main():
 
     seq= doorkey_problem(flag,cost_grid_CD,cost_grid_OD_1,cost_grid_OD_2,cost_grid_OD_3,goal,agentPos,keyPos,doorPos,env,info)
     print(seq)
-    plot_env(env)
+    # plot_env(env)
+
+    env, info = load_env(env_path)
     #----------------------------------------------------------------------------
     # seq = doorkey_problem(env) # find the optimal action sequence
-    draw_gif_from_seq(seq, load_env(env_path)[0], path='./gif/doorkey-8x8-shortcut.gif') # draw a GIF & save
+    draw_gif_from_seq(seq, load_env(env_path)[0], path='./gif/example-8x8.gif') # draw a GIF & save
+
+    # PLOT VALUE FUNCTIONS
+    Q=plot_value_function(env,seq,goal,agentPos,doorPos,flag,info)
+    plt.plot(Q.T)
+    plt.grid()
+    plt.xlabel('Time')
+    plt.ylabel('Value function')
+    plt.legend(["Pickup_position-1",
+                "Pickup_position-2",
+                "Pickup_position-3",
+                "Pickup_position-4",
+                "Goal Approach-1",
+                "Goal Approach-2",
+                "Goal Approach-3",
+                "Goal Approach-4",
+                "Unlock Door Pose"],fontsize=12,loc=1)
+    plt.show()
+    print(Q)
+
 
 
 #In[]
@@ -560,3 +652,9 @@ if __name__ == '__main__':
     # example_use_of_gym_env()
     main()
 
+
+
+# %%
+
+
+# %%
