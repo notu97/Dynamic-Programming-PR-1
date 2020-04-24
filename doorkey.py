@@ -14,7 +14,7 @@ UD = 4 # Unlock Door
 Action=np.array([MF,TL,TR,PK,UD])
 #In[]
 # When key is needed
-def robot_motion(grid,env):
+def robot_motion(grid,env): # Function to make the robot move when direct path not available
     l= env.agent_pos[1]
     b= env.agent_pos[0]
 
@@ -119,7 +119,7 @@ def robot_motion(grid,env):
 
 #In[]
 # When key is not needed
-def robot_2_Grid(grid,env):
+def robot_2_Grid(grid,env): # Function to make the robot move when direct path is available
     l= env.agent_pos[1]
     b= env.agent_pos[0]
 
@@ -225,18 +225,10 @@ def robot_2_Grid(grid,env):
 # In[]
 def doorkey_problem(flag,c_CD,c_OD_1,c_OD_2,c_OD_3,goal,agentPos,keyPos,doorPos,env,info):
     '''
-    You are required to find the optimal path in
-        doorkey-5x5-normal.env
-        doorkey-6x6-normal.env
-        doorkey-8x8-normal.env
-        
-        doorkey-6x6-direct.env
-        doorkey-8x8-direct.env
-        
-        doorkey-6x6-shortcut.env
-        doorkey-8x8-shortcut.env
-        
-    Feel Free to modify this fuction
+    Fuction to build the sequence of control actions. 
+    This funtion calls the robot_2Grid and robot_motion function
+    Flag=True => We need key to reach goal
+    Flag=False => We can reach goal directly
     '''
     goal=np.roll(goal,1)
     agentPos=np.roll(agentPos,1)
@@ -253,7 +245,7 @@ def doorkey_problem(flag,c_CD,c_OD_1,c_OD_2,c_OD_3,goal,agentPos,keyPos,doorPos,
 
         seq=[]
         # plot_env(env)
-        while count1>=0:
+        while count1>=0: # While loop to go from Initial Positon to Key position
             val=(robot_motion(c_OD_1,env))
             if(val):    
                 for i in val:
@@ -269,7 +261,7 @@ def doorkey_problem(flag,c_CD,c_OD_1,c_OD_2,c_OD_3,goal,agentPos,keyPos,doorPos,
         print(seq)
         # seq.pop(-1)
         seq.append(PK)
-        step(env,PK)
+        step(env,PK) # Pick up the key
         print(seq)
 
         agentPos=env.agent_pos
@@ -280,7 +272,7 @@ def doorkey_problem(flag,c_CD,c_OD_1,c_OD_2,c_OD_3,goal,agentPos,keyPos,doorPos,
         print(count2)
         print(c_OD_2)
 
-        while count2>=0:
+        while count2>=0: # While loop to go from key Positon to Door position
             val=(robot_motion(c_OD_2,env))
             if(val):    
                 for i in val:
@@ -294,7 +286,7 @@ def doorkey_problem(flag,c_CD,c_OD_1,c_OD_2,c_OD_3,goal,agentPos,keyPos,doorPos,
         # seq.pop(-1)
         print(seq)
         seq.pop(-1)
-        seq.append(UD)
+        seq.append(UD) # Unlock the Door
         step(env,UD)
         print(seq)
 
@@ -306,7 +298,7 @@ def doorkey_problem(flag,c_CD,c_OD_1,c_OD_2,c_OD_3,goal,agentPos,keyPos,doorPos,
         print(count3)
         print(c_OD_3)
         
-        while count3>=0:
+        while count3>=0: # While loop to go from Door Positon to Goal position
             val=(robot_motion(c_OD_3,env))
             if(val):    
                 for i in val:
@@ -319,13 +311,13 @@ def doorkey_problem(flag,c_CD,c_OD_1,c_OD_2,c_OD_3,goal,agentPos,keyPos,doorPos,
         # seq.pop(-1)
         
         optim_act_seq=seq
-    else:
+    else: # When Direct path available
         print('Key not needed')
         count=c_CD[agentPos[0],agentPos[1]]
         print(count)
         seq=[]
         # plot_env(env)
-        while count>=0:
+        while count>=0: # While loop to go from Initial Positon to Door position Directly
             val=(robot_2_Grid(c_CD,env))
             if(val):    
                 for i in val:
@@ -345,7 +337,13 @@ def doorkey_problem(flag,c_CD,c_OD_1,c_OD_2,c_OD_3,goal,agentPos,keyPos,doorPos,
     return optim_act_seq
 
 #In[]
-def fill_4_cells(cost_grid,loc,val,grid_flag):
+def fill_4_cells(cost_grid,loc,val,grid_flag): 
+    '''
+    Fill the 4 cells surrounding 
+    a given cell (whose value is K) 
+    with K+1(if the cell is not visited earlier) 
+    else leave the value as it is
+    '''
     l=loc[0]
     b=loc[1]
     # print(l,b)
@@ -384,6 +382,10 @@ def fill_4_cells(cost_grid,loc,val,grid_flag):
 
 #In[]
 def label_Correction(env,agentPos,cost_grid,goal,grid_flag):
+    '''
+    This function employes label correction algo with
+    the help of fill_4_cells fuction above.
+    '''
 
     c=0
     goal=np.roll(goal,1)
@@ -415,6 +417,10 @@ def label_Correction(env,agentPos,cost_grid,goal,grid_flag):
 
 #In[]
 def plot_value_function(env,seq,goal,agentPos,doorPos, flag,info):
+    '''
+    Fuction to plot the Value function of each cell. As the agent follows the shortest path
+    '''
+
     print('inside value function')
     l=goal[1]
     b=goal[0]
@@ -534,7 +540,7 @@ def main():
     cost_grid_CD=cost_grid #######################################
     # print(cost_grid)
 
-    #------------- When Door closed-----------
+    #------------- Finding travel cost for the env When Door is closed-----------
     # Cost without door
     label_Correction(env,agentPos,cost_grid,goal,grid_flag)
 
@@ -543,7 +549,7 @@ def main():
     else:
         cost_with_door_closed=cost_grid[info['init_agent_pos'][1],info['init_agent_pos'][0] ]
     
-    #-------------When Door Open-------------
+    #-------------Fiding travel cost for the env when Door Open-------------
     world_grid= (gym_minigrid.minigrid.Grid.encode(env.grid)[:,:,0].T).astype(np.float32)
     index= np.where(world_grid!=1 )
     world_grid[index[0][:],index[1][:]]= math.inf
@@ -557,9 +563,10 @@ def main():
     cost_grid[np.where(cost_grid<=0)]=0
 
     world_grid[info['door_pos'][1]][info['door_pos'][0]]=0 # Remove Door from Map
-    # ------------------init_pos to Key_pos
+
+    # ------------------ Finding cost to go from init_pos to Key_pos 
     label_Correction(env,agentPos,cost_grid,keyPos,grid_flag) 
-    c1=cost_grid[agentPos[1],agentPos[0]]-1
+    c1=cost_grid[agentPos[1],agentPos[0]]-1 # Store the cost in variable c1
     # print("C1= ",c1)
     cost_grid_OD_1=cost_grid ####################################
 
@@ -576,12 +583,13 @@ def main():
     cost_grid=world_grid
     cost_grid[np.where(cost_grid<=0)]=0
 
-    # -----------------key to Door
+    # -----------------Finding cost to go from key to Door
     world_grid[info['door_pos'][1]][info['door_pos'][0]]=0 # Remove Door from Map
     label_Correction(env,keyPos,cost_grid,doorPos,grid_flag) 
-    c2=cost_grid[keyPos[1],keyPos[0]]-1
+    c2=cost_grid[keyPos[1],keyPos[0]]-1 # Store the cost in variable c2
     # print("C2= ",c2)
     cost_grid_OD_2=cost_grid #####################################
+
     #--------------------------
     world_grid= (gym_minigrid.minigrid.Grid.encode(env.grid)[:,:,0].T).astype(np.float32)
     index= np.where(world_grid!=1 )
@@ -595,10 +603,10 @@ def main():
     cost_grid=world_grid
     cost_grid[np.where(cost_grid<=0)]=0
 
-    # -----------------key to Door
+    # ----------------- Finding cost to go from key to Door
     world_grid[info['door_pos'][1]][info['door_pos'][0]]=0 # Remove Door from Map
     label_Correction(env,doorPos,cost_grid,goal,grid_flag) 
-    c3=cost_grid[doorPos[1],doorPos[0]]
+    c3=cost_grid[doorPos[1],doorPos[0]] # Store the cost in variable c3
     # print("C3= ",c3)
     cost_grid_OD_3=cost_grid #####################################
     
@@ -609,7 +617,14 @@ def main():
     print('Cost with DOOR CLosed   ', cost_with_door_closed)
     print('Cost with DOOR Open  ', cost_with_door_open)
 
-    if(cost_with_door_closed>cost_with_door_open):
+    ''' 
+    Determine which rout will be the shortest 
+    i.e. initial pose to Goal directly or 
+         initial pose-> Key pose -> Door Pose -> Goal.
+         Call the doorkey_problem functions accordingly .
+    '''
+    if(cost_with_door_closed>cost_with_door_open): 
+        
         print('We need Key')
         flag=True
         # cost_grid_CD=0
@@ -619,7 +634,7 @@ def main():
         # cost_grid_OD_1,cost_grid_OD_2,cost_grid_OD_3=0,0,0
 
     seq= doorkey_problem(flag,cost_grid_CD,cost_grid_OD_1,cost_grid_OD_2,cost_grid_OD_3,goal,agentPos,keyPos,doorPos,env,info)
-    print(seq)
+    print(seq) # Get the optimal control sequence
     # plot_env(env)
 
     env, info = load_env(env_path)
