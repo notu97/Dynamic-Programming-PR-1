@@ -437,8 +437,13 @@ def plot_value_function(env,seq,goal,agentPos,doorPos, flag,info):
 
     Q=np.zeros((9,len(seq)))
     # seq.append(MF)
-    
+    if(UD in seq):
+        store =seq.index(UD)
+    else:
+        store=1
+
     for i in range(len(seq)):
+        
         # goal=np.roll(env.agent_pos,1)
         goal=env.agent_pos
         # plot_env(env)
@@ -465,21 +470,49 @@ def plot_value_function(env,seq,goal,agentPos,doorPos, flag,info):
         print("print wala", seq[i])
 
         if flag==True:
+            Q[4,0:store]=15 #cost_grid[l+1,b]
+            Q[5,0:store]=15 #cost_grid[l-1,b]
+            Q[6,0:store]=15 #cost_grid[l,b+1]
+            Q[7,0:store]=15 #cost_grid[l,b-1]
+
             cost_grid[doorPos[1],doorPos[0]]=0
             world_grid[info['door_pos'][1]][info['door_pos'][0]]=0
             print(cost_grid)
             print('GOAL:  ',goal)
             label_Correction(env,agentPos,cost_grid,goal,grid_flag)
+            # if(env.)
             print(grid_flag)
             print(cost_grid)
             step(env,seq[i])
+            if(seq[i]==UD):
+                store=i
+            
+            Q[0,i]=cost_grid[l_keypos+1,b_keypos]
+            Q[1,i]=cost_grid[l_keypos-1,b_keypos]
+            Q[2,i]=cost_grid[l_keypos,b_keypos+1]
+            Q[3,i]=cost_grid[l_keypos,b_keypos-1]
+            
+            Q[4,i]=cost_grid[l+1,b]
+            Q[5,i]=cost_grid[l-1,b]
+            Q[6,i]=cost_grid[l,b+1]
+            Q[7,i]=cost_grid[l,b-1]
+            
+            # Q[8,i]=cost_grid[l_doorPos,b_doorPos+1]
+            Q[8,i]=cost_grid[l_doorPos,b_doorPos-1]
+
+            
+
             # plot_env(env)
             #### STORE Values#########
             
             print('-------------------------------------------------------------')
         
-        else:    
+        else:     # We have shortcut
             print(cost_grid)
+            Q[4,0:store]=15 #cost_grid[l+1,b]
+            Q[5,0:store]=15 #cost_grid[l-1,b]
+            Q[6,0:store]=15 #cost_grid[l,b+1]
+            Q[7,0:store]=15 
             print('GOAL:  ',goal)
             label_Correction(env,agentPos,cost_grid,goal,grid_flag)
             print(grid_flag)
@@ -488,18 +521,18 @@ def plot_value_function(env,seq,goal,agentPos,doorPos, flag,info):
             # plot_env(env)
             print('-------------------------------------------------------------')
 
-        Q[0,i]=cost_grid[l_keypos+1,b_keypos]
-        Q[1,i]=cost_grid[l_keypos-1,b_keypos]
-        Q[2,i]=cost_grid[l_keypos,b_keypos+1]
-        Q[3,i]=cost_grid[l_keypos,b_keypos-1]
-        
-        Q[4,i]=cost_grid[l+1,b]
-        Q[5,i]=cost_grid[l-1,b]
-        Q[6,i]=cost_grid[l,b+1]
-        Q[7,i]=cost_grid[l,b-1]
-        
-        # Q[8,i]=cost_grid[l_doorPos,b_doorPos+1]
-        Q[8,i]=cost_grid[l_doorPos,b_doorPos-1]
+            Q[0,i]=cost_grid[l_keypos+1,b_keypos]
+            Q[1,i]=cost_grid[l_keypos-1,b_keypos]
+            Q[2,i]=cost_grid[l_keypos,b_keypos+1]
+            Q[3,i]=cost_grid[l_keypos,b_keypos-1]
+            
+            Q[4,i]=cost_grid[l+1,b]
+            Q[5,i]=cost_grid[l-1,b]
+            Q[6,i]=cost_grid[l,b+1]
+            Q[7,i]=cost_grid[l,b-1]
+            
+            # Q[8,i]=cost_grid[l_doorPos,b_doorPos+1]
+            Q[8,i]=cost_grid[l_doorPos,b_doorPos-1]
 
     return Q
 #In[]     
@@ -509,14 +542,14 @@ def plot_value_function(env,seq,goal,agentPos,doorPos, flag,info):
 #In[]
 def main():
 
-    env_path = './envs/example-8x8.env'
+    # env_path = './envs/example-8x8.env'
     # env_path = './envs/doorkey-5x5-normal.env'
     # env_path = './envs/doorkey-6x6-direct.env' # gif saved
     # env_path = './envs/doorkey-6x6-normal.env' # PROBLEM
     # env_path = './envs/doorkey-6x6-shortcut.env' 
     # env_path = './envs/doorkey-8x8-direct.env' # gif saved
     # env_path = './envs/doorkey-8x8-normal.env'
-    # env_path = './envs/doorkey-8x8-shortcut.env' 
+    env_path = './envs/doorkey-8x8-shortcut.env' 
 
     env, info = load_env(env_path) # load an environment
 
@@ -635,29 +668,37 @@ def main():
 
     seq= doorkey_problem(flag,cost_grid_CD,cost_grid_OD_1,cost_grid_OD_2,cost_grid_OD_3,goal,agentPos,keyPos,doorPos,env,info)
     print(seq) # Get the optimal control sequence
-    # plot_env(env)
+    plot_env(env)
 
     env, info = load_env(env_path)
     #----------------------------------------------------------------------------
     # seq = doorkey_problem(env) # find the optimal action sequence
-    draw_gif_from_seq(seq, load_env(env_path)[0], path='./gif/example-8x8.gif') # draw a GIF & save
+    # draw_gif_from_seq(seq, load_env(env_path)[0], path='./gif/example-8x8.gif') # draw a GIF & save
 
     # PLOT VALUE FUNCTIONS
     Q=plot_value_function(env,seq,goal,agentPos,doorPos,flag,info)
-    # Q[np.where(Q==math.inf)]=0
-    plt.plot(Q.T)
+    Q[np.where(Q==math.inf)]=15
+    plt.plot(Q[0,:],'--')
+    plt.plot(Q[1,:],'-')
+    plt.plot(Q[2,:],'--')
+    plt.plot(Q[3,:],'-')
+    plt.plot(Q[4,:],'--')
+    plt.plot(Q[5,:],'-')
+    plt.plot(Q[6,:],'--')
+    plt.plot(Q[7,:],'-')
+    plt.plot(Q[8,:],'--')
     plt.grid()
     plt.xlabel('Time')
     plt.ylabel('Value function')
-    plt.legend(["Pickup_position-1",
-                "Pickup_position-2",
-                "Pickup_position-3",
-                "Pickup_position-4",
-                "Goal Approach-1",
-                "Goal Approach-2",
-                "Goal Approach-3",
-                "Goal Approach-4",
-                "Unlock Door Pose"],fontsize=12,loc=1)
+    plt.legend(["Pickup-1",
+                "Pickup-2",
+                "Pickup-3",
+                "Pickup-4",
+                "Goal_loc-1",
+                "Goal_loc-2",
+                "Goal_loc-3",
+                "Goal_loc-4",
+                "Unlock Door"],fontsize=12,loc=1)
     plt.show()
     print(Q)
 
